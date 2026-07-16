@@ -28,20 +28,13 @@ def clean_text(text):
     cleaned = [lemmatizer.lemmatize(word) for word in tokens if word not in stop_words]
     return " ".join(cleaned)
 
-# 3. Mock Dataset (1 = Reliable, 0 = Fake/Clickbait)
-print("Loading data...")
-data = {
-    'text': [
-        "The stock market saw a 5% increase today following the Federal Reserve's announcement.",
-        "BREAKING: Alien spaceship lands in Washington! Government hiding the truth!!!",
-        "New study shows that eating apples can improve long-term heart health.",
-        "You won't believe what this celebrity did! Click here to find out the shocking secret!",
-        "The local city council voted 4-3 to approve the new highway funding project.",
-        "Miracle cure for all diseases discovered! Doctors hate him! Buy now!"
-    ],
-    'label': [1, 0, 1, 0, 1, 0]
-}
-df = pd.DataFrame(data)
+# 3. Load the Master Dataset
+print("Loading master dataset (61,038 rows)...")
+df = pd.read_csv('master_training_data.csv')
+
+# Defensive coding: Force the text column to be interpreted as strings 
+# just in case Pandas got confused by blank rows or weird characters
+df['text'] = df['text'].astype(str)
 
 # 4. Data Processing Pipeline
 print("Cleaning text data (this may take a moment on large datasets)...")
