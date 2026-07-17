@@ -1,0 +1,20 @@
+[
+  {
+    "id": 1,
+    "source": "Reserve Bank of India",
+    "topic": "Currency Regulations",
+    "fact": "The Reserve Bank of India maintains the legal status of the current 500 rupee notes. There are no plans or directives issued to demonetize or ban the 500 rupee currency denomination."
+  },
+  {
+    "id": 2,
+    "source": "Ministry of Finance",
+    "topic": "Tax Policy",
+    "fact": "Income tax slabs for the current financial year remain unchanged as per the latest union budget announcement, maintaining existing thresholds for personal income taxation."
+  },
+  {
+    "id": 3,
+    "source": "Ministry of Education",
+    "topic": "University Exams",
+    "fact": "All university mid-semester and final examinations will proceed strictly as scheduled by the respective academic councils. No nationwide cancellations have been authorized."
+  }
+]
