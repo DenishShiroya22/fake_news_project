@@ -4,6 +4,8 @@ import json
 import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
+import pandas as pd
+import os
 
 # --- Web App Configuration ---
 st.set_page_config(page_title="Hybrid Misinformation Engine", layout="wide")
@@ -16,25 +18,38 @@ def load_engine_1():
     vectorizer = joblib.load('vectorizer.pkl')
     return model, vectorizer
 
-# --- Load Engine 2 (Vector Knowledge Base) ---
+# --- Load Engine 2 (Massive CSV Vector Knowledge Base) ---
 @st.cache_resource
 def load_engine_2():
-    with open('trusted_knowledge.json', 'r') as f:
-        kb = json.load(f)
+    csv_file = 'massive_knowledge_base.csv'
     
-    facts = [item['fact'] for item in kb]
+    # Fallback plan in case the pipeline hasn't been run yet
+    if not os.path.exists(csv_file):
+        # Create a tiny temporary dataframe so the app doesn't crash
+        df = pd.DataFrame({
+            'source': ['System'], 
+            'fact': ['Knowledge base initializing. Please run update_knowledge.py']
+        })
+    else:
+        df = pd.read_csv(csv_file)
+        
+    df['fact'] = df['fact'].astype(str)
+    facts = df['fact'].tolist()
+    sources = df['source'].tolist()
     
-    # We train a NEW vector space purely for the local facts
+    # Train the vectorizer on the massive dataset
     kb_vectorizer = TfidfVectorizer(stop_words='english')
     kb_matrix = kb_vectorizer.fit_transform(facts)
-    return kb, kb_vectorizer, kb_matrix
+    
+    return facts, sources, kb_vectorizer, kb_matrix
+
 
 # Initialize Both Engines safely
 try:
     lr_model, lr_vectorizer = load_engine_1()
-    knowledge_base, kb_vectorizer, kb_matrix = load_engine_2()
+    facts, sources, kb_vectorizer, kb_matrix = load_engine_2()
 except FileNotFoundError:
-    st.error("Missing critical files. Ensure model.pkl, vectorizer.pkl, and trusted_knowledge.json are in the folder.")
+    st.error("Missing critical files. Ensure model.pkl, vectorizer.pkl, and massive_knowledge_base.csv are in the folder.")
     st.stop()
 
 # --- User Interface ---
@@ -70,21 +85,20 @@ if st.button("Run Hybrid Analysis"):
         with col2:
             st.subheader("📚 Engine 2: Local Fact Check")
             
-            # Map the user's text into the JSON dictionary
+            # Map the user's text into the massive vector space
             user_vec_2 = kb_vectorizer.transform([user_input])
             
-            # The mathematical algorithm you just learned
+            # Compute similarity against thousands of rows simultaneously
             similarities = cosine_similarity(user_vec_2, kb_matrix).flatten()
             best_match_idx = np.argmax(similarities)
             best_score = similarities[best_match_idx]
             
-            # Threshold check: Is the angle close enough to be a match?
-            if best_score > 0.15: 
-                matched_fact = knowledge_base[best_match_idx]
+            # Evaluation Threshold
+            if best_score > 0.20: 
                 st.info(f"**Verified Document Found** (Match: {best_score*100:.1f}%)")
-                st.write(f"**Source:** {matched_fact['source']}")
-                st.write(f"**Fact:** {matched_fact['fact']}")
+                st.write(f"**Source:** {sources[best_match_idx]}")
+                st.write(f"**Fact:** {facts[best_match_idx]}")
             else:
                 st.warning("**No verified documents found.**")
-                st.write("This claim does not mathematically match anything in our local database.")
+                st.write("This claim does not mathematically match anything in our updated database.")
                 st.write(f"(Closest similarity was only {best_score*100:.1f}%)")
