@@ -94,7 +94,7 @@ if st.button("Run Hybrid Analysis"):
             best_score = similarities[best_match_idx]
             
             # Evaluation Threshold
-            if best_score > 0.20: 
+            if best_score > 0.35: 
                 st.info(f"**Verified Document Found** (Match: {best_score*100:.1f}%)")
                 st.write(f"**Source:** {sources[best_match_idx]}")
                 st.write(f"**Fact:** {facts[best_match_idx]}")
