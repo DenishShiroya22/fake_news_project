@@ -1,6 +1,6 @@
 import pandas as pd
 import os
-
+import feedparser
 def run_pipeline():
     print("🚀 Starting Hybrid Knowledge Base Pipeline...")
     
@@ -30,16 +30,27 @@ def run_pipeline():
     # --- STEP 2: THE AUTOMATION ENGINE (TIER 3) ---
     print("📡 Fetching live operational updates from network feeds...")
     
-    # For your live presentation, you can mock the daily incoming stream
-    # or write an RSS parsing function here using standard XML feeds.
-    new_data = {
-        "source": ["PIB Fact Check India", "AltNews Verified"],
-        "fact": [
-            "The Ministry of Finance confirmed that no official notifications regarding emergency banking holidays have been distributed.",
-            "The Department of Telecommunications issued a statement confirming that cellular networks will remain fully operational nationwide."
-        ]
-    }
-    df_new = pd.DataFrame(new_data)
+    # We ping Google News specifically for recent fact-checks in India
+    rss_url = "https://news.google.com/rss/search?q=fact+check+india&hl=en-IN&gl=IN&ceid=IN:en"
+    feed = feedparser.parse(rss_url)
+    
+    new_sources = []
+    new_facts = []
+    
+    # Extract the top 100 most recent verified articles from the live web
+    for entry in feed.entries[:100]:
+        # Clean up the source name if available, otherwise default to Live RSS
+        source_name = entry.source.title if 'source' in entry else "Live News Network"
+        new_sources.append(source_name)
+        new_facts.append(entry.title)
+    
+    # Convert the live scraped data into a Pandas DataFrame
+    df_new = pd.DataFrame({
+        "source": new_sources,
+        "fact": new_facts
+    })
+    
+    print(f"✅ Successfully pulled {len(df_new)} live facts from the web.")
     
     # --- STEP 3: MERGING & DEDUPLICATION ---
     print("🔄 Merging datasets and executing deduplication algorithms...")
