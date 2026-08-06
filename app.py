@@ -7,7 +7,7 @@ import os
 from sentence_transformers import SentenceTransformer
 # --- Web App Configuration ---
 st.set_page_config(page_title="Hybrid Misinformation Engine", layout="wide")
-st.title("🛡️ Hybrid Misinformation Detection Engine")
+st.title("🛡️ VeritasAI: Hybrid Misinformation Detection Engine")
 
 # --- Load Engine 1 (Linguistic AI) ---
 @st.cache_resource
